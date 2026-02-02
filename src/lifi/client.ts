@@ -25,7 +25,7 @@ export async function getChains() {
 
   // Check if our testnets are supported
   const targetIds = Object.values(CHAIN_IDS);
-  const supportedTestnets = chains.filter((chain) => targetIds.includes(chain.id));
+  const supportedTestnets = chains.filter((chain) => (targetIds as number[]).includes(chain.id));
 
   console.log(`Total chains: ${chains.length}`);
   console.log('Our testnet chains found:', supportedTestnets.map((c) => `${c.name} (${c.id})`));

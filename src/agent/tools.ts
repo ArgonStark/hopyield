@@ -12,9 +12,13 @@ export interface Position {
 
 export interface YieldComparison {
   currentPool: PoolData | null;
-  bestPool: PoolData;
-  apyDifference: number;
-  extraYearlyEarnings: number;
+  bestPool: PoolData; // Best across ALL protocols
+  bestUniswapPool: PoolData; // Best executable pool (Uniswap only)
+  apyDifference: number; // vs best Uniswap (executable)
+  apyDifferenceOverall: number; // vs best overall
+  extraYearlyEarnings: number; // based on executable pool
+  extraYearlyEarningsOverall: number; // based on best overall
+  hasBetterNonUniswap: boolean; // True if best overall is not Uniswap
 }
 
 export interface MigrationCost {
@@ -28,29 +32,43 @@ export interface MigrationDecision {
   migrate: boolean;
   reason: string;
   breakeven: number; // days to breakeven
+  isExecutable: boolean; // Only true for Uniswap destinations
 }
 
 export function compareYields(position: Position, availablePools?: PoolData[]): YieldComparison {
   const pools = availablePools ?? getPoolsData();
+  const uniswapPools = pools.filter((p) => p.isUniswap);
 
   // Find current pool (if position matches one)
   const currentPool = pools.find(
     (p) => p.chainId === position.chainId && p.apy === position.currentAPY
   ) ?? null;
 
-  // Find the best yield pool (can be on any chain)
+  // Find the best yield pool across ALL protocols
   const bestPool = pools.reduce((best, current) =>
     current.apy > best.apy ? current : best
   );
 
-  const apyDifference = bestPool.apy - position.currentAPY;
+  // Find the best Uniswap pool (executable)
+  const bestUniswapPool = uniswapPools.reduce((best, current) =>
+    current.apy > best.apy ? current : best
+  );
+
+  const apyDifference = bestUniswapPool.apy - position.currentAPY;
+  const apyDifferenceOverall = bestPool.apy - position.currentAPY;
   const extraYearlyEarnings = (position.amount * apyDifference) / 100;
+  const extraYearlyEarningsOverall = (position.amount * apyDifferenceOverall) / 100;
+  const hasBetterNonUniswap = bestPool.apy > bestUniswapPool.apy;
 
   return {
     currentPool,
     bestPool,
+    bestUniswapPool,
     apyDifference,
+    apyDifferenceOverall,
     extraYearlyEarnings,
+    extraYearlyEarningsOverall,
+    hasBetterNonUniswap,
   };
 }
 
@@ -127,11 +145,22 @@ export async function estimateMigrationCost(
 
 export function shouldMigrate(
   currentAPY: number,
-  bestAPY: number,
+  targetPool: PoolData,
   migrationCost: MigrationCost,
   positionSize: number
 ): MigrationDecision {
-  const apyDifference = bestAPY - currentAPY;
+  const targetAPY = targetPool.apy;
+  const apyDifference = targetAPY - currentAPY;
+
+  // Only execute migrations to Uniswap pools
+  if (!targetPool.isUniswap) {
+    return {
+      migrate: false,
+      reason: `${targetPool.protocol} is not currently supported for automated migration`,
+      breakeven: Infinity,
+      isExecutable: false,
+    };
+  }
 
   // If no improvement, don't migrate
   if (apyDifference <= 0) {
@@ -139,6 +168,7 @@ export function shouldMigrate(
       migrate: false,
       reason: 'Current position already has the best or equal APY',
       breakeven: Infinity,
+      isExecutable: true,
     };
   }
 
@@ -160,6 +190,7 @@ export function shouldMigrate(
       migrate: true,
       reason: `Migration pays off in ${breakevenDays.toFixed(1)} days. Extra yearly earnings: $${extraYearlyEarnings.toFixed(2)}`,
       breakeven: breakevenDays,
+      isExecutable: true,
     };
   }
 
@@ -168,6 +199,7 @@ export function shouldMigrate(
       migrate: true,
       reason: `Significant APY improvement of ${apyDifference.toFixed(1)}%. Breakeven in ${breakevenDays.toFixed(1)} days`,
       breakeven: breakevenDays,
+      isExecutable: true,
     };
   }
 
@@ -175,5 +207,6 @@ export function shouldMigrate(
     migrate: false,
     reason: `Breakeven period of ${breakevenDays.toFixed(1)} days is too long for ${apyDifference.toFixed(1)}% APY gain`,
     breakeven: breakevenDays,
+    isExecutable: true,
   };
 }

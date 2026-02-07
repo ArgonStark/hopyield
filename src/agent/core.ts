@@ -5,6 +5,7 @@ import {
   type Position,
   type MigrationCost,
   type MigrationDecision,
+  type YieldComparison,
 } from './tools.js';
 import { type PoolData } from '../data/pools.js';
 
@@ -14,31 +15,34 @@ export interface AnalysisResult {
   details: {
     currentAPY: number;
     bestAPY: number;
+    bestUniswapAPY: number;
     bestPool: PoolData;
+    bestUniswapPool: PoolData;
     extraYearlyEarnings: number;
     migrationCost: MigrationCost;
     breakeven: number;
     decision: MigrationDecision;
+    hasBetterNonUniswap: boolean;
   };
 }
 
 export class YieldAgent {
   async analyze(position: Position): Promise<AnalysisResult> {
-    // Step 1: Compare yields
+    // Step 1: Compare yields across all protocols
     const yieldComparison = compareYields(position);
 
-    // Step 2: Estimate migration cost
+    // Step 2: Estimate migration cost to best executable (Uniswap) pool
     const migrationCost = await estimateMigrationCost(
       position.chainId,
-      yieldComparison.bestPool.chainId,
+      yieldComparison.bestUniswapPool.chainId,
       position.amount,
       position.token
     );
 
-    // Step 3: Make decision
+    // Step 3: Make decision (only for Uniswap pools)
     const decision = shouldMigrate(
       position.currentAPY,
-      yieldComparison.bestPool.apy,
+      yieldComparison.bestUniswapPool,
       migrationCost,
       position.amount
     );
@@ -53,22 +57,25 @@ export class YieldAgent {
       details: {
         currentAPY: position.currentAPY,
         bestAPY: yieldComparison.bestPool.apy,
+        bestUniswapAPY: yieldComparison.bestUniswapPool.apy,
         bestPool: yieldComparison.bestPool,
+        bestUniswapPool: yieldComparison.bestUniswapPool,
         extraYearlyEarnings: yieldComparison.extraYearlyEarnings,
         migrationCost,
         breakeven: decision.breakeven,
         decision,
+        hasBetterNonUniswap: yieldComparison.hasBetterNonUniswap,
       },
     };
   }
 
   private buildReasoning(
     position: Position,
-    yieldComparison: ReturnType<typeof compareYields>,
+    yieldComparison: YieldComparison,
     migrationCost: MigrationCost,
     decision: MigrationDecision
   ): string {
-    const { bestPool, apyDifference, extraYearlyEarnings } = yieldComparison;
+    const { bestUniswapPool, apyDifference, extraYearlyEarnings } = yieldComparison;
 
     const lines: string[] = [];
 
@@ -78,18 +85,18 @@ export class YieldAgent {
 
     // Best opportunity
     if (apyDifference > 0) {
-      lines.push(`Best Opportunity Found: ${bestPool.protocol} ${bestPool.pair} on ${bestPool.chain}`);
-      lines.push(`  APY: ${bestPool.apy}% (+${apyDifference.toFixed(1)}%)`);
-      lines.push(`  TVL: $${(bestPool.tvl / 1_000_000).toFixed(1)}M`);
-      lines.push(`  Risk Score: ${bestPool.riskScore}/10`);
+      lines.push(`Best Opportunity Found: ${bestUniswapPool.protocol} ${bestUniswapPool.pair} on ${bestUniswapPool.chain}`);
+      lines.push(`  APY: ${bestUniswapPool.apy}% (+${apyDifference.toFixed(1)}%)`);
+      lines.push(`  TVL: $${(bestUniswapPool.tvl / 1_000_000).toFixed(1)}M`);
+      lines.push(`  Risk Score: ${bestUniswapPool.riskScore}/10`);
       lines.push('');
     } else {
       lines.push('You already have the best available yield.');
       lines.push('');
     }
 
-    // Migration cost breakdown
-    if (position.chainId !== bestPool.chainId) {
+    // Migration cost breakdown (if cross-chain)
+    if (apyDifference > 0 && position.chainId !== bestUniswapPool.chainId) {
       lines.push('Migration Cost Breakdown:');
       lines.push(`  Bridge Fee: $${migrationCost.bridgeFeeUsd.toFixed(2)}`);
       lines.push(`  Gas Cost: $${migrationCost.gasCostUsd.toFixed(2)}`);

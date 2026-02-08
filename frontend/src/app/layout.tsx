@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "HopYield",
-  description: "Cross-chain yield optimizer",
+  title: "UniYield",
+  description: "AI-Powered Uniswap Yield Optimizer",
 };
 
 export default function RootLayout({

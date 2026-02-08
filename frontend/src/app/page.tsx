@@ -39,7 +39,7 @@ export default function Home() {
       {/* Header */}
       <div className="w-full max-w-lg flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">🦘 HopYield</h1>
+          <h1 className="text-3xl font-bold">🦄 UniYield</h1>
           <p className="text-xs text-gray-500 mt-1">
             AI-Powered Uniswap V4 Yield Optimizer
           </p>

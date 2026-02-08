@@ -1,4 +1,4 @@
-# 🦘 HopYield
+# 🦄 UniYield
 
 **AI-Powered Uniswap Yield Optimizer**
 
@@ -10,11 +10,11 @@
 
 ## Overview
 
-HopYield is an AI-powered yield optimizer that automatically finds the best Uniswap liquidity pool yields across chains and migrates your position via LI.FI — all in one click.
+UniYield is an AI-powered yield optimizer that automatically finds the best Uniswap liquidity pool yields across chains and migrates your position via LI.FI — all in one click.
 
 **The Problem:** Uniswap LPs leave money on the table. The same USDC/ETH pool can yield 8% on Base but 12% on Arbitrum. Manually tracking yields across chains, estimating bridge costs, and executing migrations is tedious and error-prone.
 
-**The Solution:** HopYield's AI agent continuously monitors Uniswap pool APYs across chains, calculates whether migrating is profitable after bridge/gas costs, and executes cross-chain migrations through LI.FI when the math makes sense.
+**The Solution:** UniYield's AI agent continuously monitors Uniswap pool APYs across chains, calculates whether migrating is profitable after bridge/gas costs, and executes cross-chain migrations through LI.FI when the math makes sense.
 
 **Target Users:** Uniswap liquidity providers who want to maximize yield without manually monitoring pools across multiple chains.
 
@@ -72,7 +72,7 @@ HopYield is an AI-powered yield optimizer that automatically finds the best Unis
 ## Project Structure
 
 ```
-hopyield/
+uniyield/
 ├── frontend/          # Next.js app with RainbowKit
 │   ├── src/app/       # Pages, API routes, providers
 │   └── src/lib/       # Agent client library
@@ -111,7 +111,7 @@ npm install && npm run dev
 ## Prize Tracks
 
 ### LI.FI — AI x Smart App
-HopYield uses LI.FI SDK for cross-chain yield migration. The AI agent estimates bridge costs via LI.FI quotes and executes migrations through LI.FI's routing engine.
+UniYield uses LI.FI SDK for cross-chain yield migration. The AI agent estimates bridge costs via LI.FI quotes and executes migrations through LI.FI's routing engine.
 
 ### Uniswap — V4 Hook
 HopYieldHook is a Uniswap V4 hook deployed on Base Sepolia that tracks LP positions on-chain using `beforeAddLiquidity` and `afterRemoveLiquidity` hooks, enabling automated yield optimization.

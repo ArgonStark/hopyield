@@ -10,16 +10,23 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center px-4 py-12 gap-8">
       {/* Header */}
       <div className="w-full max-w-lg flex items-center justify-between">
-        <h1 className="text-3xl font-bold">🦘 HopYield</h1>
+        <div>
+          <h1 className="text-3xl font-bold">🦘 HopYield</h1>
+          <p className="text-xs text-gray-500 mt-1">AI-Powered Uniswap V4 Yield Optimizer</p>
+        </div>
         <ConnectButton />
       </div>
 
       {/* Position Card */}
       <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900/50 p-6 shadow-lg">
         <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
-          Your Position
+          🦄 Your Uniswap Position
         </h2>
         <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Pool</span>
+            <span className="font-medium">USDC/ETH</span>
+          </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Chain</span>
             <span className="font-medium">Base</span>
@@ -55,7 +62,7 @@ export default function Home() {
           🧠 AI Recommendation
         </h2>
         <p className="text-lg font-semibold mb-4">
-          Migrate to Arbitrum for 12% APY
+          Migrate to Uniswap V3 USDC/ETH on Arbitrum for 12% APY
         </p>
         <div className="space-y-3">
           <div className="flex justify-between">
@@ -106,6 +113,40 @@ export default function Home() {
         <p className="text-xs text-gray-500">
           AI will automatically move your funds to higher yield pools
         </p>
+      </div>
+
+      {/* V4 Hook Status Card */}
+      <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900/50 p-6 shadow-lg">
+        <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-2">
+          🦄 V4 Hook Status
+        </h2>
+        <p className="text-xs text-gray-500 mb-4">
+          Tracks your Uniswap V4 LP positions on-chain
+        </p>
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Contract</span>
+            <a
+              href="https://sepolia.basescan.org/address/0x3C0d10f5126ff4a547fd60B0B3d532c04C1D4900"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              0x3C0d...4900
+            </a>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Network</span>
+            <span className="font-medium">Base Sepolia</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Status</span>
+            <span className="flex items-center gap-2 font-medium text-green-400">
+              <span className="h-2 w-2 rounded-full bg-green-400" />
+              Active
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
